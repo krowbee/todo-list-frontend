@@ -1,0 +1,8 @@
+@import "tailwindcss";
+@plugin "daisyui" {
+  themes: cupcake, forest;
+}
+
+* {
+  box-sizing: border-box;
+}
