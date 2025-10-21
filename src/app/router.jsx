@@ -3,9 +3,9 @@ import RootLayout from "./layout/RootLayout";
 import { Homepage } from "../home/Homepage";
 import LoginForm from "../pages/LoginForm";
 import RegisterForm from "../pages/RegisterForm";
-import { GuestOnly } from "../auth/GuestOnly";
+import { GuestOnly } from "../auth/guards/GuestOnly";
 import { LogoutForm } from "../pages/LogoutForm";
-import { AuthOnly } from "../auth/AuthOnly";
+import { AuthOnly } from "../auth/guards/AuthOnly";
 import { TasksPage } from "../pages/TasksPage";
 
 export const router = createBrowserRouter([

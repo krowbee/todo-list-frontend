@@ -1,37 +1,65 @@
 import { observer } from "mobx-react-lite";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Context } from "../context";
-import { Calendar } from "../ui/Calendar";
+import { ProfileComponent } from "./TasksPage/ProfileComponent";
+import { FilterComponent } from "./TasksPage/FilterComponent";
+import { TasksComponent } from "./TasksPage/TasksComponent";
+import { TaskDescription } from "./TasksPage/TaskDescription";
+import { EditTaskComponent } from "./TasksPage/EditTaskComponent";
+import TaskController from "./TasksPage/TaskController";
+import { AddTaskComponent } from "./TasksPage/AddTaskComponent";
+import { useWindowWidth } from "../hooks/useWindowWidth";
 
 
 export const TasksPage = observer(() => {
     const { store } = useContext(Context);
-    const [date, setDate] = useState("");
+
+    useEffect(() => {
+        (async () => {
+            setIsLoading(true)
+            await store.setTasks()
+            setIsLoading(false)
+        })();
+    }, [store])
+
+    useEffect(() => {
+        if (!currentTask) return;
+        const updated = store.tasks.find(task => task.id === currentTask.id)
+        if (updated) setCurrentTask(updated)
+        else setCurrentTask("")
+    }, [store.tasks])
+
+    const width = useWindowWidth();
 
 
-    return (<section className="w-full grid grid-cols-1 md:grid-rows-2 md:grid-cols-[min-content_1fr] lg:grid-cols-[min-content_repeat(2,1fr)] ">
-        <div className="sidebar row-start-1 row-span-2 w-full h-full flex flex-col justify-between items-center">
-            <div className="profile-container card shadow-sm w-full flex flex-col rounded-none p-2 bg-base-100 text-center items-center justify-center md:justify-start">
-                <h1 className="font-mono w-full font-bold text-xl text-center text-base-content tracking-wide">Hi,<span className="text-primary">{store.user.username}</span>!</h1>
-                <ul>
-                    <li className="item-list text-sm font-mono tracking-tight">You have <span className="text-error text-lg">13</span> uncompleted tasks</li>
-                </ul>
-            </div>
-            <div className="date-filter w-full h-max-content flex flex-col items-center md:items-start justify-center pt-4">
-                <h2 className="text-center w-full font-mono text-base-content text-xl font-bold">Filter by date</h2>
-                <Calendar setDate={setDate} date={date}></Calendar>
-            </div>
-        </div>
-        <div className="task-container overflow-y-auto w-full h-full col-start-2 col-span-1 shadow-md bg-base-100">
-            <h1 className="font-mono text-xl text-center">Tasks</h1>
-            <div className="task">
-                <h1>task title</h1>
-                <input
-                    type="checkbox"
-                    onChange={(e)=> e.target.value} className="checkbox border-red-400 bg-base-100 checked:border-green-500 checked:bg-green-400 checked:text-white"
-                />
-            </div>
-        </div>
+    const [isLoading, setIsLoading] = useState(true);
+    const [currentTask, setCurrentTask] = useState("");
 
-    </section>)
+    const [filter, setFilter] = useState("all")
+    const now = new Date()
+    const tasks = store.tasks || []
+
+    const activeTasks = tasks.filter(task => !task.completed && new Date(task.dueTo) >= now)
+    const overdueTasks = tasks.filter(task => !task.completed && new Date(task.dueTo) < now)
+    const todayTasks = tasks.filter(task => task.dueTo == now.toISOString().split("T")[0])
+    const completedTasks = tasks.filter(task => task.completed)
+
+    const filteredTasks = filter === "all" ? tasks :
+        filter === "active" ? activeTasks :
+            filter === "overdue" ? overdueTasks :
+                filter === "due-today" ? todayTasks :
+                    filter === "completed" ? completedTasks : []
+
+
+    return (<section className="relative w-full p-4 md:p-10 flex flex-col gap-4 md:grid md:grid-rows-2 md:grid-cols-[300px_1fr] lg:grid-cols-[300px_repeat(2,1fr)] lg:grid-rows-1">
+        {store.isAddTaskOpen ? <AddTaskComponent /> : store.isEditTaskOpen ? <EditTaskComponent task={currentTask} /> : ''} 
+        {width < 1024 && (store.isAddTaskOpen || store.isEditTaskOpen) ? "" : (<>
+        <div className="sidebar w-full row-start-1 max-h-80 flex flex-col gap-3 items-center justify-between"> 
+            <ProfileComponent store={store} tasks={tasks} activeTasks={activeTasks} overdueTasks={overdueTasks} /> 
+            <FilterComponent filter={filter} setFilter={setFilter} /> 
+        </div> 
+        <TasksComponent filteredTasks={filteredTasks} setCurrentTask={setCurrentTask} setTasks={store.setTasks} isLoading={isLoading} />
+        <TaskDescription currentTask={currentTask} setCurrentTask={setCurrentTask} />
+        </>)}
+        </section>)
 })

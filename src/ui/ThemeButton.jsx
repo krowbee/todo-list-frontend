@@ -7,11 +7,11 @@ export const ThemeButton = observer(({ handleTheme }) => {
     
     return (
         <label className="swap swap-rotate">
-            <input type="checkbox" onChange={handleTheme} checked={store.theme === "forest"} />
+            <input type="checkbox" onChange={handleTheme} checked={store.theme === "dark"} />
 
 
             <svg
-                className="swap-off h-10 w-10 fill-primary"
+                className="swap-off h-8 w-8 fill-primary"
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24">
                 <path
@@ -19,7 +19,7 @@ export const ThemeButton = observer(({ handleTheme }) => {
             </svg>
 
             <svg
-                className="swap-on h-10 w-10 fill-primary"
+                className="swap-on h-8 w-8 fill-primary"
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24">
                 <path

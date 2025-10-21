@@ -1,6 +1,6 @@
 import { observer } from "mobx-react-lite";
 import { useContext } from "react";
-import { Context } from "../context";
+import { Context } from "../../context";
 import { Navigate } from "react-router-dom";
 
 export const GuestOnly = observer(({children})=>{
@@ -10,7 +10,7 @@ export const GuestOnly = observer(({children})=>{
 
     const params = new URLSearchParams(window.location.search);
     
-    const to = params.get("returnTo")  || "/";
+    const to = params.get("returnTo")  || "/tasks";
     
     if (store.isAuth) return <Navigate to={to} replace />
     

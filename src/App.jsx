@@ -14,16 +14,15 @@ function App() {
     useEffect(()=>{
         (async ()=>{
             if (localStorage.getItem("token")){
-            store.setIsLoading(true);
             await store.checkAuth();
-            store.setIsLoading(false);
         }
+        store.setIsLoading(false);
         store.checkTheme();
         })()
     },[])
 
     return store.isLoading ? (<Loader />):(
-    <div className="min-h-screen flex flex-col" data-theme={store.theme}>
+    <div className={`min-h-screen flex flex-col ${store.isScreenLocked ? "no-scroll-mobile" : ""}`} data-theme={store.theme}>
      <AppProviders />
     </div>
         )

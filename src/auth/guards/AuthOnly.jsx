@@ -1,6 +1,6 @@
 import { observer } from "mobx-react-lite";
 import { useContext } from "react";
-import { Context } from "../context";
+import { Context } from "../../context";
 import { Navigate } from "react-router-dom";
 
 

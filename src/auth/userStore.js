@@ -2,34 +2,42 @@ import { makeAutoObservable } from "mobx";
 import axios from "axios";
 import { API_URL } from "../lib/api"
 import AuthService from "../services/AuthService";
+import TaskController from "../pages/TasksPage/TaskController";
 
-
-export class Store{
+export class Store {
     user = {};
     isAuth = false;
-    theme = "cupcake"
-    isLoading = false;
-    
-    constructor(){
+    theme = "light"
+    isLoading = true;
+    isAddTaskOpen = false;
+    isEditTaskOpen = false;
+    tasks = [{}]
+
+    constructor() {
         makeAutoObservable(this)
     }
 
-    setIsLoading(bool){
+
+    async setTasks() {
+        const tasks = await TaskController.getTasks()
+        this.tasks = tasks
+    }
+
+    setIsLoading(bool) {
         this.isLoading = bool;
     }
 
-    setAuth(bool){
+    setAuth(bool) {
         this.isAuth = bool;
     }
 
-    setUser(user){
-        console.log(user)
+    setUser(user) {
         this.user = user;
     }
 
     checkTheme = () => {
         const theme = localStorage.getItem("theme");
-        if (theme) {this.theme = theme};
+        if (theme) { this.theme = theme };
     }
 
     setTheme = (theme) => {
@@ -37,52 +45,63 @@ export class Store{
         this.theme = theme;
     }
 
-    handleTheme = () =>{
-        const newTheme = this.theme === "cupcake" ? "forest" : "cupcake";
+    handleTheme = () => {
+        const newTheme = this.theme === "light" ? "dark" : "light";
         this.setTheme(newTheme);
     }
 
-    async login(email, password){
-        try{
-        const response = await AuthService.login(email, password);
-        localStorage.setItem("token", response.data.accessToken);
-        console.log(response)
-        this.setAuth(true);
-        this.setUser(response.data.user)
-        } catch(e){
+    handleAddTaskMenu = () => {
+        if (this.isEditTaskOpen) { this.isEditTaskOpen = false }
+        this.isAddTaskOpen = !this.isAddTaskOpen
+        
+    }
+
+
+    handleEditTaskMenu = () => {
+        if (this.isAddTaskOpen) { this.isAddTaskOpen = false }
+        this.isEditTaskOpen = !this.isEditTaskOpen
+    }
+
+    async login(email, password) {
+        try {
+            const response = await AuthService.login(email, password);
+            localStorage.setItem("token", response.data.accessToken);
+            this.setAuth(true);
+            this.setUser(response.data.user)
+        } catch (e) {
             return e?.response
         }
     }
 
-    async register(username, email, password){
-        try{
+    async register(username, email, password) {
+        try {
             const response = await AuthService.register(username, email, password);
             localStorage.setItem("token", response.data.accessToken);
             this.setAuth(true);
             this.setUser(response.data.user)
-        } catch(e){
+        } catch (e) {
             return e?.response;
         }
     }
 
-    async logout(){
-        try{
-            const response = await AuthService.logout();
+    async logout() {
+        try {
+            await AuthService.logout();
             localStorage.removeItem("token");
             this.setAuth(false);
             this.setUser({});
-        } catch(e) {
-            return e?.response
+        } catch (e) {
+            return e
         }
     }
 
-    async checkAuth(){
-        try{
-            const response = await axios.post(`${API_URL}/auth/refresh`, {}, {withCredentials:true})
+    async checkAuth() {
+        try {
+            const response = await axios.post(`${API_URL}/auth/refresh`, {}, { withCredentials: true })
             localStorage.setItem("token", response.data.accessToken)
             this.setAuth(true);
             this.setUser(response.data.user)
-        } catch(e){
+        } catch (e) {
             this.setAuth(false);
         }
     }
